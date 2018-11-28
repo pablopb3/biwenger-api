@@ -25,7 +25,8 @@ func Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func login() string {
-	response := doRequest("https://biwenger.as.com/api/v2/auth/login", "POST", `{"email": "pablopb3@gmail.com", "password":"maluco88"}`)
+	user, _ := json.Marshal(User{"pablopb3@gmail.com", "maluco88"})
+	response := doRequest("https://biwenger.as.com/api/v2/auth/login", "POST", string(user))
     token := Token{}
     json.Unmarshal([]byte(response), &token)
     return token.Token
@@ -80,7 +81,10 @@ func SetLineUp(w http.ResponseWriter, r *http.Request) {
 
     url := "https://biwenger.as.com/api/v2/user?fields=*"
 
-	var jsonStr = []byte(`{"lineup":{"type":"4-4-2","playersID":[11677,1752,9078,2160,17052,944,9071,1043,10750,10498,15568]}}`)
+    formation := "4-4-2"
+    playerIds := []int{11677,1752,9078,2160,17052,944,9071,1043,10750,10498,15568}
+	lineup, _ := json.Marshal(StartingEleven{LineUp{formation, playerIds}})
+	var jsonStr = []byte(lineup)
     req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonStr))     
     req.Header.Set("Content-Type", "application/json")
     req.Header.Set("authorization", "Bearer " + token)
@@ -100,6 +104,4 @@ func SetLineUp(w http.ResponseWriter, r *http.Request) {
 }
 
 
-type Token struct {
-	Token string 
-}
+
