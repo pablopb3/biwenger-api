@@ -3,27 +3,41 @@ package main
 import(
     "net/http"
     "fmt"
-    //"encoding/json"    
-	//"strconv"
-	//"strings"
 	"github.com/tidwall/gjson"
+	"strconv"
+	"github.com/pablopb3/biwenger-api/dao"
+    "strings"
+    "encoding/json"
 )
 
-const playerAliasMacro = "{playerAlias}"
+const (
+	playerAliasMacro = "{playerAlias}"
+	getAllPlayersUrl = "https://cf.biwenger.com/api/v2/competitions/la-liga/data?lang=en&score=2" //2 sofascore
+	getPlayerUrl = "https://cf.biwenger.com/api/v2/players/la-liga/" + playerAliasMacro + "?fields=*%2Cteam%2Cfitness%2Creports(points%2Chome%2Cevents%2Cstatus(status%2CstatusText)%2Cmatch(*%2Cround%2Chome%2Caway)%2Cstar)%2Cprices%2Ccompetition%2Cseasons%2Cnews%2Cthreads&score=1&lang=en"
+) 
 
-const getAllPlayersUrl = "https://cf.biwenger.com/api/v2/competitions/la-liga/data?lang=en&score=2" //2 sofascore
-const getPlayerUrl = "https://cf.biwenger.com/api/v2/players/la-liga/" + playerAliasMacro + "?fields=*%2Cteam%2Cfitness%2Creports(points%2Chome%2Cevents%2Cstatus(status%2CstatusText)%2Cmatch(*%2Cround%2Chome%2Caway)%2Cstar)%2Cprices%2Ccompetition%2Cseasons%2Cnews%2Cthreads&score=1&lang=en"
 
 func GetPlayerById(w http.ResponseWriter, r *http.Request) {
 
-	json := GetAllPlayers()
+	//json := GetAllPlayers()
 
-	/*id, _ := strconv.Atoi(r.URL.Query().Get("id"))
-	alias := getAliasByPlayerId(id)
+	id := getPlayerIdFromQueryUrl(r)
+	playerAlias := dao.GetAliasByPlayerId(id)
 	player := new(Player)
-	doRequestAndGetStruct("GET", strings.Replace(getPlayerUrl, playerAliasMacro, alias, 1), getPlayersHeaders(), "", &player) */
-    fmt.Fprintf(w, string(json))
+	doRequestAndGetStruct("GET", strings.Replace(getPlayerUrl, playerAliasMacro, playerAlias, 1), getPlayersHeaders(), "", &player)
+    playerJson, _ := json.Marshal(player)
+    fmt.Fprintf(w, string(playerJson))
+}
 
+func getPlayerIdFromQueryUrl(r *http.Request) int {
+
+    ids, ok := r.URL.Query()["id"]
+    if !ok || len(ids[0]) < 1 {
+        panic("Url Param 'key' is missing")
+        return 0
+    }
+    id, _ := strconv.Atoi(ids[0])
+    return id
 }
 
 
@@ -36,9 +50,6 @@ func GetAllPlayers() string {
 
 
 
-func getAliasByPlayerId(id int) string {
-	return "messi"
-}
 
 func getPlayersHeaders()  map[string]string {
 
@@ -51,6 +62,8 @@ func getPlayersHeaders()  map[string]string {
 type Object struct {
 	data interface{}
 }
+
+
 
 type Player struct {
 	Status int `json:"status"`
