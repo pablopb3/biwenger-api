@@ -1,0 +1,15 @@
+version: '3'
+services:
+   biwenger-api:
+      build: .
+      restart: always
+      expose:
+         - 8080
+      ports:
+         - "8080:8080"
+      depends_on:
+        - mongodb
+   mongodb:
+      image: mongo:latest
+      restart: always
+      command: --smallfiles

@@ -5,7 +5,7 @@ import(
     "fmt"
 	"github.com/tidwall/gjson"
 	"strconv"
-	"github.com/pablopb3/biwenger-api/dao"
+	"app/dao"
     "strings"
     "encoding/json"
 )
