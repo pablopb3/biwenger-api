@@ -85,17 +85,24 @@ func GetPlayerIdsFromPlayers(players []PlayerBase) []int {
 
 func SetLineUp(w http.ResponseWriter, r *http.Request) {
 
-    formation := "4-4-2"
-    playerIds := []int{11677,1752,9078,2160,17052,944,9071,1043,10750,10498,15568}
-	lineup, _ := json.Marshal(StartingEleven{LineUp{formation, playerIds}})
-	jsonLineUp := []byte(lineup)
-
+	lineUp := new(LineUp)
+    getJsonBody(r, &lineUp)
+	jsonLineUp, _ := json.Marshal(StartingEleven{*lineUp})
     headers := getDefaultHeaders(r)
     setLineUpBiwengerResponse := new(SetLineUpBiwengerResponse)
 	doRequestAndGetStruct("PUT", setMyLineUpUrl, headers, string(jsonLineUp), &setLineUpBiwengerResponse)
-    fmt.Fprintf(w, string("{\"status\", \"OK\"}"))
-    
+	jsonSetLineUpBiwengerResponse, _ := json.Marshal(setLineUpBiwengerResponse)
+    fmt.Fprintf(w, string(jsonSetLineUpBiwengerResponse))
 } 
+
+func getJsonBody(r *http.Request, target interface{}) {
+	
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&target)
+    if(err != nil) {
+		panic(err)
+	}
+}
 
 func getDefaultHeaders(r *http.Request)  map[string]string {
 

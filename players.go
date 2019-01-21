@@ -4,7 +4,6 @@ import(
     "net/http"
     "fmt"
 	"github.com/tidwall/gjson"
-	"strconv"
 	"app/dao"
     "strings"
     "encoding/json"
@@ -21,7 +20,7 @@ func GetPlayerById(w http.ResponseWriter, r *http.Request) {
 
 	//json := GetAllPlayers()
 
-	id := getPlayerIdFromQueryUrl(r)
+	id := getNumericParamFromQueryUrl(r, "id")
 	playerAlias := dao.GetAliasByPlayerId(id)
 	player := new(Player)
 	doRequestAndGetStruct("GET", strings.Replace(getPlayerUrl, playerAliasMacro, playerAlias, 1), getPlayersHeaders(), "", &player)
@@ -29,27 +28,12 @@ func GetPlayerById(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, string(playerJson))
 }
 
-func getPlayerIdFromQueryUrl(r *http.Request) int {
-
-    ids, ok := r.URL.Query()["id"]
-    if !ok || len(ids[0]) < 1 {
-        panic("Url Param 'key' is missing")
-        return 0
-    }
-    id, _ := strconv.Atoi(ids[0])
-    return id
-}
-
-
 func GetAllPlayers() string {
 	objectJson := doRequestAndGetJson("GET", getAllPlayersUrl, getPlayersHeaders(), "")
 	players := gjson.Get(objectJson, "data.players.15462")
 	return players.String()
 	
 }
-
-
-
 
 func getPlayersHeaders()  map[string]string {
 

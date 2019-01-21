@@ -34,6 +34,7 @@ docker-compose up
 
 * Login
 * GetMyPlayers
+* SetLineUp
 
 ## Licensing
 MIT: http://rem.mit-license.org
