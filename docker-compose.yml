@@ -11,5 +11,11 @@ services:
         - mongodb
    mongodb:
       image: mongo:latest
+      volumes:
+         - ./data/mongodb:/data/db
+      expose:
+        - 27017
+      ports:
+        - "27017:27017"
       restart: always
       command: --smallfiles

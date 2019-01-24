@@ -6,6 +6,22 @@ http://localhost:8080/login
 
 --------------------------------------------------
 
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request GET
+http://localhost:8080/updatePlayersAlias
+
+-------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request GET
+http://localhost:8080/GetPlayerId?id=$$YOURPLAYERID$$
+
+-------------------------------------------------
+
 curl 
 -H "Content-Type: application/json"   
 -H "authorization":"Bearer $$YOURTOKEN$$" 
@@ -20,3 +36,6 @@ curl
 --request POST 
 --data '{"type":"4-4-2","playersID":[11677,1752,9078,2160,17052,944,9071,1043,10750,10498,15568]}' 
 http://localhost:8080/setLineUp
+
+-------------------------------------------------
+

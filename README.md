@@ -3,6 +3,8 @@ Api for the football manager game biwenger. It will allow you to do every operat
 you need like get all your players, get all the info from an specific player, 
 set your lineup, get all players from the market, make a bid on a player...
 
+Built with docker, go and mongodb
+
 ## Getting started
 
 docker-compose up in the project root
@@ -33,6 +35,8 @@ docker-compose up
 ## Current Features
 
 * Login
+* UpdatePlayersAlias
+* GetPlayerById
 * GetMyPlayers
 * SetLineUp
 

@@ -6,7 +6,7 @@ import(
 )
 
 const (
-	SERVER = "mongodb://localhost:27017"
+	SERVER = "mongodb://mongodb:27017"
 	DATABASE = "biwenger"
 	COLLECTION = "players"
 )
@@ -27,6 +27,23 @@ func GetAliasByPlayerId(id int) string {
 
 	var player PlayerAlias
 	db = session.DB(DATABASE)
-	db.C(COLLECTION).Find(bson.M{"id_player": id}).One(&player)
+	db.C(COLLECTION).Find(bson.M{"_id": id}).One(&player)
 	return player.Alias
+}
+
+func SavePlayerAlias(playerIdAliasMap PlayerIdAliasMap) {
+
+	var db *mgo.Database
+	session, err := mgo.Dial(SERVER)
+	if err != nil {
+		panic(err)
+	}
+	db = session.DB(DATABASE)
+	db.C(COLLECTION).Insert(playerIdAliasMap)
+}
+
+type PlayerIdAliasMap struct {
+	ID               int          `bson:"_id" json:"id"`
+	Alias             string      `bson:"alias" json:"alias"`
+
 }

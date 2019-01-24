@@ -28,11 +28,17 @@ func GetPlayerById(w http.ResponseWriter, r *http.Request) {
     fmt.Fprintf(w, string(playerJson))
 }
 
-func GetAllPlayers() string {
+func UpdatePlayersAliasInDb(w http.ResponseWriter, r *http.Request) {
 	objectJson := doRequestAndGetJson("GET", getAllPlayersUrl, getPlayersHeaders(), "")
-	players := gjson.Get(objectJson, "data.players.15462")
-	return players.String()
-	
+	players := gjson.Get(objectJson, "data.players")
+		players.ForEach(func(key, value gjson.Result) bool {
+		playerId := gjson.Get(value.String(), "id")
+		playerAlias := gjson.Get(value.String(), "slug")
+		playerIdAliasMap := dao.PlayerIdAliasMap{int(playerId.Int()), playerAlias.String()}
+		dao.SavePlayerAlias(playerIdAliasMap)
+		println(playerIdAliasMap.Alias)
+		return true // keep iterating
+	})	
 }
 
 func getPlayersHeaders()  map[string]string {
@@ -195,4 +201,26 @@ type Player struct {
 		PointsLastSeason int   `json:"pointsLastSeason"`
 		ScoreID          int   `json:"scoreID"`
 	} `json:"data"`
+}
+
+
+type PlayersAliasInfo struct {
+	NumID struct {
+		ID               int           `json:"id"`
+		Name             string        `json:"name"`
+		Slug             string        `json:"slug"`
+		TeamID           int           `json:"teamID"`
+		Position         int           `json:"position"`
+		Price            int           `json:"price"`
+		FantasyPrice     int           `json:"fantasyPrice"`
+		Status           string        `json:"status"`
+		PriceIncrement   int           `json:"priceIncrement"`
+		Fitness          []interface{} `json:"fitness"`
+		Points           int           `json:"points"`
+		PlayedHome       int           `json:"playedHome"`
+		PlayedAway       int           `json:"playedAway"`
+		PointsHome       int           `json:"pointsHome"`
+		PointsAway       int           `json:"pointsAway"`
+		PointsLastSeason int           `json:"pointsLastSeason"`
+	} `json:"id"`
 }
