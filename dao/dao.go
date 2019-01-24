@@ -1,20 +1,20 @@
 package dao
 
-import(
+import (
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 const (
-	SERVER = "mongodb://mongodb:27017"
-	DATABASE = "biwenger"
+	SERVER     = "mongodb://mongodb:27017"
+	DATABASE   = "biwenger"
 	COLLECTION = "players"
 )
 
 type PlayerAlias struct {
-	ID bson.ObjectId `bson:"_id" json:"id"`
-	IdPlayer int `bson:"id_player" json:"id_player"`
-	Alias string `bson:"alias" json:"alias"`
+	ID       bson.ObjectId `bson:"_id" json:"id"`
+	IdPlayer int           `bson:"id_player" json:"id_player"`
+	Alias    string        `bson:"alias" json:"alias"`
 }
 
 func GetAliasByPlayerId(id int) string {
@@ -43,7 +43,6 @@ func SavePlayerAlias(playerIdAliasMap PlayerIdAliasMap) {
 }
 
 type PlayerIdAliasMap struct {
-	ID               int          `bson:"_id" json:"id"`
-	Alias             string      `bson:"alias" json:"alias"`
-
+	ID    int    `bson:"_id" json:"id"`
+	Alias string `bson:"alias" json:"alias"`
 }

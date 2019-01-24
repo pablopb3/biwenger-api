@@ -1,6 +1,6 @@
 FROM golang:latest
 
-WORKDIR /go/src/app
+WORKDIR /go/src/github.com/pablopb3/biwenger-api/
 RUN go get "gopkg.in/mgo.v2/bson" && \
 	go get "gopkg.in/mgo.v2" && \
 	go get "github.com/tidwall/gjson" && \

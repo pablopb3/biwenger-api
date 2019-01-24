@@ -1,20 +1,19 @@
 package main
 
-import(
-    "net/http"
-    "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"github.com/pablopb3/biwenger-api/dao"
 	"github.com/tidwall/gjson"
-	"app/dao"
-    "strings"
-    "encoding/json"
+	"net/http"
+	"strings"
 )
 
 const (
 	playerAliasMacro = "{playerAlias}"
 	getAllPlayersUrl = "https://cf.biwenger.com/api/v2/competitions/la-liga/data?lang=en&score=2" //2 sofascore
-	getPlayerUrl = "https://cf.biwenger.com/api/v2/players/la-liga/" + playerAliasMacro + "?fields=*%2Cteam%2Cfitness%2Creports(points%2Chome%2Cevents%2Cstatus(status%2CstatusText)%2Cmatch(*%2Cround%2Chome%2Caway)%2Cstar)%2Cprices%2Ccompetition%2Cseasons%2Cnews%2Cthreads&score=1&lang=en"
-) 
-
+	getPlayerUrl     = "https://cf.biwenger.com/api/v2/players/la-liga/" + playerAliasMacro + "?fields=*%2Cteam%2Cfitness%2Creports(points%2Chome%2Cevents%2Cstatus(status%2CstatusText)%2Cmatch(*%2Cround%2Chome%2Caway)%2Cstar)%2Cprices%2Ccompetition%2Cseasons%2Cnews%2Cthreads&score=1&lang=en"
+)
 
 func GetPlayerById(w http.ResponseWriter, r *http.Request) {
 
@@ -24,36 +23,34 @@ func GetPlayerById(w http.ResponseWriter, r *http.Request) {
 	playerAlias := dao.GetAliasByPlayerId(id)
 	player := new(Player)
 	doRequestAndGetStruct("GET", strings.Replace(getPlayerUrl, playerAliasMacro, playerAlias, 1), getPlayersHeaders(), "", &player)
-    playerJson, _ := json.Marshal(player)
-    fmt.Fprintf(w, string(playerJson))
+	playerJson, _ := json.Marshal(player)
+	fmt.Fprintf(w, string(playerJson))
 }
 
 func UpdatePlayersAliasInDb(w http.ResponseWriter, r *http.Request) {
 	objectJson := doRequestAndGetJson("GET", getAllPlayersUrl, getPlayersHeaders(), "")
 	players := gjson.Get(objectJson, "data.players")
-		players.ForEach(func(key, value gjson.Result) bool {
+	players.ForEach(func(key, value gjson.Result) bool {
 		playerId := gjson.Get(value.String(), "id")
 		playerAlias := gjson.Get(value.String(), "slug")
 		playerIdAliasMap := dao.PlayerIdAliasMap{int(playerId.Int()), playerAlias.String()}
 		dao.SavePlayerAlias(playerIdAliasMap)
 		println(playerIdAliasMap.Alias)
 		return true // keep iterating
-	})	
+	})
 }
 
-func getPlayersHeaders()  map[string]string {
+func getPlayersHeaders() map[string]string {
 
-    var m = make(map[string]string)
-    m["Referer"] = "https://biwenger.as.com/players"
-    m["User-Agent"] = "Mozilla/5.0 (compatible; Rigor/1.0.0; http://rigor.com)"
-    return m
+	var m = make(map[string]string)
+	m["Referer"] = "https://biwenger.as.com/players"
+	m["User-Agent"] = "Mozilla/5.0 (compatible; Rigor/1.0.0; http://rigor.com)"
+	return m
 }
 
 type Object struct {
 	data interface{}
 }
-
-
 
 type Player struct {
 	Status int `json:"status"`
@@ -202,7 +199,6 @@ type Player struct {
 		ScoreID          int   `json:"scoreID"`
 	} `json:"data"`
 }
-
 
 type PlayersAliasInfo struct {
 	NumID struct {
