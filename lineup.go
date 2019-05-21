@@ -110,8 +110,10 @@ func getDefaultHeaders(r *http.Request) map[string]string {
 	var m = make(map[string]string)
 	m["Content-Type"] = "application/json"
 	m["authorization"] = auth
-	m["x-league"] = "757450"
-	m["x-version"] = "560"
+	m["x-lang"] = "en"
+	m["x-league"] = "726131"
+	m["x-user"] = "3670110"
+	m["x-version"] = "569"
 	return m
 }
 

@@ -28,7 +28,7 @@ func GetPlayerById(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePlayersAliasInDb(w http.ResponseWriter, r *http.Request) {
-	objectJson := doRequestAndGetJson("GET", getAllPlayersUrl, getPlayersHeaders(), "")
+	objectJson := doRequestAndGetJson("GET", getAllPlayersUrl, getDefaultHeaders(r), "")
 	players := gjson.Get(objectJson, "data.players")
 	players.ForEach(func(key, value gjson.Result) bool {
 		playerId := gjson.Get(value.String(), "id")
@@ -45,6 +45,8 @@ func getPlayersHeaders() map[string]string {
 	var m = make(map[string]string)
 	m["Referer"] = "https://biwenger.as.com/players"
 	m["User-Agent"] = "Mozilla/5.0 (compatible; Rigor/1.0.0; http://rigor.com)"
+	m["Accept"] = "application/json, text/plain, */*"
+	m["Content-Type"] = "application/json; charset=UTF-8"
 	return m
 }
 

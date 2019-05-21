@@ -1,6 +1,8 @@
 package dao
 
 import (
+	"encoding/json"
+	"fmt"
 	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -40,6 +42,8 @@ func SavePlayerAlias(playerIdAliasMap PlayerIdAliasMap) {
 	}
 	db = session.DB(DATABASE)
 	db.C(COLLECTION).Insert(playerIdAliasMap)
+	playerJson, _ := json.Marshal(playerIdAliasMap)
+	fmt.Printf("Player inserted in db: " + string(playerJson))
 }
 
 type PlayerIdAliasMap struct {

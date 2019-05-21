@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 )
@@ -10,6 +11,9 @@ import (
 func doRequestAndGetJson(method string, url string, headers map[string]string, payload string) string {
 
 	var jsonStr = []byte(payload)
+
+	fmt.Printf("Request: \n" + method + "\n" + url + "\n" + payload + "\n")
+
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonStr))
 
 	for k, v := range headers {
@@ -21,8 +25,15 @@ func doRequestAndGetJson(method string, url string, headers map[string]string, p
 	if err != nil {
 		panic(err)
 	}
-	body, _ := ioutil.ReadAll(resp.Body)
-	return string(body)
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	responseBody := string(body)
+	fmt.Printf("Response: \n" + responseBody)
+	return responseBody
 
 }
 
