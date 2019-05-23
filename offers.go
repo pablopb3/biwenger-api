@@ -8,13 +8,12 @@ import (
 
 const offersUrl string = "https://biwenger.as.com/api/v2/offers/"
 
-
 func AcceptReceivedOffer(w http.ResponseWriter, r *http.Request) {
 
 	r.ParseForm()
 	offerId := r.FormValue("id")
 	url := offersUrl + offerId
-	actionToffer := ActionToOffer{"accept"}
+	actionToffer := ActionToOffer{"accepted"}
 	jsonActionToOffer := structToJson(actionToffer)
 	var acceptOfferBiwengerResponse = new(AcceptOfferBiwengerResponse)
 	doRequestAndGetStruct("PUT", url, getDefaultHeaders(r), string(jsonActionToOffer), &acceptOfferBiwengerResponse)

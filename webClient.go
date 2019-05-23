@@ -12,7 +12,7 @@ func doRequestAndGetJson(method string, url string, headers map[string]string, p
 
 	var jsonStr = []byte(payload)
 
-	fmt.Printf("Request: \n" + method + "\n" + url + "\n" + payload + "\n")
+	fmt.Printf("\n\nRequest: \n" + method + "\n" + url + "\n" + payload)
 
 	req, err := http.NewRequest(method, url, bytes.NewBuffer(jsonStr))
 
@@ -32,7 +32,7 @@ func doRequestAndGetJson(method string, url string, headers map[string]string, p
 		panic(err)
 	}
 	responseBody := string(body)
-	fmt.Printf("Response: \n" + responseBody)
+	fmt.Printf("\nResponse: \n" + responseBody)
 	return responseBody
 
 }

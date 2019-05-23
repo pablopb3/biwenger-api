@@ -22,9 +22,12 @@ func main() {
 	router.HandleFunc("/sendPlayersToMarket", SendPlayersToMarket)
 	router.HandleFunc("/getPlayersInMarket", GetPlayersInMarket)
 
-	//router.HandleFunc("/getReceivedOffers", GetReceivedOffers)
+	router.HandleFunc("/getReceivedOffers", GetReceivedOffers)
 	router.HandleFunc("/acceptReceivedOffer", AcceptReceivedOffer)
 	router.HandleFunc("/placeOffer", PlaceOffer)
+
+	router.HandleFunc("/getMyMoney", GetMyMoney)
+	router.HandleFunc("/getMaxBid", GetMaxBid)
 
 
 	log.Fatal(http.ListenAndServe(":8080", router))

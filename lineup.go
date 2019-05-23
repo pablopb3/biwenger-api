@@ -3,8 +3,78 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/magiconair/properties"
 	"net/http"
 )
+
+
+const getMyPlayersUrl = "https://biwenger.as.com/api/v2/user?fields=*,lineup(type,playersID),players(*,fitness,team,owner),market(*,-userID),offers,-trophies"
+const setMyLineUpUrl = "https://biwenger.as.com/api/v2/user?fields=*"
+
+func GetMyPlayers(w http.ResponseWriter, r *http.Request) {
+
+	headers := getDefaultHeaders(r)
+	getlineUpBiwengerResponse := new(GetLineUpBiwengerResponse)
+	doRequestAndGetStruct("GET", getMyPlayersUrl, headers, "", &getlineUpBiwengerResponse)
+	playerIds := GetPlayerIdsFromPlayers(getlineUpBiwengerResponse.Data.Players)
+	players := structToJson(&playerIds)
+	fmt.Fprintf(w, string(players))
+}
+
+func GetPlayerIdsFromPlayers(players []PlayerBase) []int {
+	var playerIds []int
+	for _, player := range players {
+		playerIds = append(playerIds, player.ID)
+	}
+	return playerIds
+}
+
+func SetLineUp(w http.ResponseWriter, r *http.Request) {
+
+	lineUp := new(LineUp)
+	getJsonBody(r, &lineUp)
+	jsonLineUp, _ := json.Marshal(StartingEleven{*lineUp})
+	headers := getDefaultHeaders(r)
+	setLineUpBiwengerResponse := new(SetLineUpBiwengerResponse)
+	doRequestAndGetStruct("PUT", setMyLineUpUrl, headers, string(jsonLineUp), &setLineUpBiwengerResponse)
+	jsonSetLineUpBiwengerResponse, _ := json.Marshal(setLineUpBiwengerResponse)
+	fmt.Fprintf(w, string(jsonSetLineUpBiwengerResponse))
+}
+
+func getJsonBody(r *http.Request, target interface{}) {
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&target)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func getDefaultHeaders(r *http.Request) map[string]string {
+
+	p := properties.MustLoadFile("application.properties", properties.UTF8)
+
+	auth := r.Header.Get("authorization")
+
+	var m = make(map[string]string)
+	m["Content-Type"] = "application/json"
+	m["authorization"] = auth
+	m["x-lang"] = "en"
+	m["x-league"] = p.GetString("leagueId", "")
+	m["x-user"] = p.GetString("userId", "")
+	m["x-version"] = p.GetString("biwengerVersion", "")
+	return m
+}
+
+func structToJson(entity interface{}) string {
+	json, err := json.Marshal(&entity)
+	if err != nil {
+		fmt.Println(err)
+		return ""
+	}
+	return string(json)
+}
+
 
 type GetLineUpBiwengerResponse struct {
 	Status int        `json:"status"`
@@ -59,69 +129,4 @@ type LineUpBaseData struct {
 	Balance    int    `json:"balance"`
 	JoinDate   int    `json:"joinDate"`
 	LineupDate int    `json:"lineupDate"`
-}
-
-const getMyPlayersUrl = "https://biwenger.as.com/api/v2/user?fields=*,lineup(type,playersID),players(*,fitness,team,owner),market(*,-userID),offers,-trophies"
-const setMyLineUpUrl = "https://biwenger.as.com/api/v2/user?fields=*"
-
-func GetMyPlayers(w http.ResponseWriter, r *http.Request) {
-
-	headers := getDefaultHeaders(r)
-	getlineUpBiwengerResponse := new(GetLineUpBiwengerResponse)
-	doRequestAndGetStruct("GET", getMyPlayersUrl, headers, "", &getlineUpBiwengerResponse)
-	playerIds := GetPlayerIdsFromPlayers(getlineUpBiwengerResponse.Data.Players)
-	players := structToJson(&playerIds)
-	fmt.Fprintf(w, string(players))
-}
-
-func GetPlayerIdsFromPlayers(players []PlayerBase) []int {
-	var playerIds []int
-	for _, player := range players {
-		playerIds = append(playerIds, player.ID)
-	}
-	return playerIds
-}
-
-func SetLineUp(w http.ResponseWriter, r *http.Request) {
-
-	lineUp := new(LineUp)
-	getJsonBody(r, &lineUp)
-	jsonLineUp, _ := json.Marshal(StartingEleven{*lineUp})
-	headers := getDefaultHeaders(r)
-	setLineUpBiwengerResponse := new(SetLineUpBiwengerResponse)
-	doRequestAndGetStruct("PUT", setMyLineUpUrl, headers, string(jsonLineUp), &setLineUpBiwengerResponse)
-	jsonSetLineUpBiwengerResponse, _ := json.Marshal(setLineUpBiwengerResponse)
-	fmt.Fprintf(w, string(jsonSetLineUpBiwengerResponse))
-}
-
-func getJsonBody(r *http.Request, target interface{}) {
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&target)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func getDefaultHeaders(r *http.Request) map[string]string {
-
-	auth := r.Header.Get("authorization")
-
-	var m = make(map[string]string)
-	m["Content-Type"] = "application/json"
-	m["authorization"] = auth
-	m["x-lang"] = "en"
-	m["x-league"] = "726131"
-	m["x-user"] = "3670110"
-	m["x-version"] = "569"
-	return m
-}
-
-func structToJson(entity interface{}) string {
-	json, err := json.Marshal(&entity)
-	if err != nil {
-		fmt.Println(err)
-		return ""
-	}
-	return string(json)
 }
