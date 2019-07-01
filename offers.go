@@ -17,7 +17,7 @@ func AcceptReceivedOffer(w http.ResponseWriter, r *http.Request) {
 	jsonActionToOffer := structToJson(actionToffer)
 	var acceptOfferBiwengerResponse = new(AcceptOfferBiwengerResponse)
 	doRequestAndGetStruct("PUT", url, getDefaultHeaders(r), string(jsonActionToOffer), &acceptOfferBiwengerResponse)
-	fmt.Fprintf(w, string(structToJson(*acceptOfferBiwengerResponse)))
+	fmt.Fprintf(w, SendApiResponse(acceptOfferBiwengerResponse))
 
 }
 
@@ -29,8 +29,7 @@ func PlaceOffer(w http.ResponseWriter, r *http.Request) {
 	headers := getDefaultHeaders(r)
 	placeOfferBiwengerResponse := new(PlaceOfferBiwengerResponse)
 	doRequestAndGetStruct("POST", offersUrl, headers, string(jsonPlaceOffer), &placeOfferBiwengerResponse)
-	jsonSetLineUpBiwengerResponse, _ := json.Marshal(placeOfferBiwengerResponse)
-	fmt.Fprintf(w, string(jsonSetLineUpBiwengerResponse))
+	fmt.Fprintf(w, SendApiResponse(placeOfferBiwengerResponse))
 
 }
 

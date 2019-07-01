@@ -17,8 +17,7 @@ func GetMyPlayers(w http.ResponseWriter, r *http.Request) {
 	getlineUpBiwengerResponse := new(GetLineUpBiwengerResponse)
 	doRequestAndGetStruct("GET", getMyPlayersUrl, headers, "", &getlineUpBiwengerResponse)
 	playerIds := GetPlayerIdsFromPlayers(getlineUpBiwengerResponse.Data.Players)
-	players := structToJson(&playerIds)
-	fmt.Fprintf(w, string(players))
+	fmt.Fprintf(w, SendApiResponse(playerIds))
 }
 
 func GetPlayerIdsFromPlayers(players []PlayerBase) []int {
@@ -37,8 +36,7 @@ func SetLineUp(w http.ResponseWriter, r *http.Request) {
 	headers := getDefaultHeaders(r)
 	setLineUpBiwengerResponse := new(SetLineUpBiwengerResponse)
 	doRequestAndGetStruct("PUT", setMyLineUpUrl, headers, string(jsonLineUp), &setLineUpBiwengerResponse)
-	jsonSetLineUpBiwengerResponse, _ := json.Marshal(setLineUpBiwengerResponse)
-	fmt.Fprintf(w, string(jsonSetLineUpBiwengerResponse))
+	fmt.Fprintf(w, SendApiResponse(setLineUpBiwengerResponse))
 }
 
 func getJsonBody(r *http.Request, target interface{}) {

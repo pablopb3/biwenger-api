@@ -7,7 +7,11 @@ import (
 )
 
 type Token struct {
-	Token string
+	Token string `json:"token"`
+}
+
+type Login struct {
+	Token Token `json:"login"`
 }
 
 type User struct {
@@ -33,8 +37,8 @@ func login(w http.ResponseWriter, r *http.Request) {
 
 	token := new(Token)
 	doRequestAndGetStruct("POST", loginUrl, headers, string(userJson), token)
-
-	fmt.Fprintf(w, string(structToJson(&token)))
+	login := Login{*token}
+	fmt.Fprintf(w, SendApiResponse(login))
 }
 
 func getLoginHeaders() map[string]string {

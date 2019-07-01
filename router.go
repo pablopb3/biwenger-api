@@ -8,31 +8,33 @@ import (
 )
 
 func main() {
+	v := "v1"
 	router := mux.NewRouter().StrictSlash(true)
 
-	router.HandleFunc("/", greet)
+	router.HandleFunc("/"+v+"/", greet)
 
-	router.HandleFunc("/login", login)
+	router.HandleFunc("/"+v+"/login", login)
 
-	router.HandleFunc("/getMyPlayers", GetMyPlayers)
-	router.HandleFunc("/updatePlayersAlias", UpdatePlayersAliasInDb)
-	router.HandleFunc("/getPlayerById", GetPlayerById)
-	router.HandleFunc("/setLineUp", SetLineUp)
+	router.HandleFunc("/"+v+"/getMyPlayers", GetMyPlayers)
+	router.HandleFunc("/"+v+"/getPlayerById", GetPlayerById)
+	router.HandleFunc("/"+v+"/setLineUp", SetLineUp)
 
-	router.HandleFunc("/sendPlayersToMarket", SendPlayersToMarket)
-	router.HandleFunc("/getPlayersInMarket", GetPlayersInMarket)
+	router.HandleFunc("/"+v+"/sendPlayersToMarket", SendPlayersToMarket)
+	router.HandleFunc("/"+v+"/getPlayersInMarket", GetPlayersInMarket)
 
-	router.HandleFunc("/getReceivedOffers", GetReceivedOffers)
-	router.HandleFunc("/acceptReceivedOffer", AcceptReceivedOffer)
-	router.HandleFunc("/placeOffer", PlaceOffer)
+	router.HandleFunc("/"+v+"/getReceivedOffers", GetReceivedOffers)
+	router.HandleFunc("/"+v+"/acceptReceivedOffer", AcceptReceivedOffer)
+	router.HandleFunc("/"+v+"/placeOffer", PlaceOffer)
 
-	router.HandleFunc("/getMyMoney", GetMyMoney)
-	router.HandleFunc("/getMaxBid", GetMaxBid)
+	router.HandleFunc("/"+v+"/getMyMoney", GetMyMoney)
+	router.HandleFunc("/"+v+"/getMaxBid", GetMaxBid)
+	router.HandleFunc("/"+v+"/getMarketEvolution", GetMarketEvolution)
 
+	router.HandleFunc("/"+v+"/updatePlayersAlias", UpdatePlayersAliasInDb)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
 func greet(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi from your biwenger api!!")
+	fmt.Fprintf(w, SendApiResponseWithMessage("", "Hi from your biwenger api!!"))
 }

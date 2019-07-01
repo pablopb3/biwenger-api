@@ -8,6 +8,7 @@ import (
 )
 
 const marketUrl string = "https://biwenger.as.com/api/v2/market"
+const marketStatsUrl string = "https://cf.biwenger.com/api/v2/competitions/la-liga/market?interval=day&includeValues=true"
 
 type SendToMarket struct {
 	Type  string `json:"type"`
@@ -29,7 +30,7 @@ func SendPlayersToMarket(w http.ResponseWriter, r *http.Request) {
 	jsonSendToMarket := structToJson(sendToMarket)
 	var biwengerResponse = new(BiwengerStatusResponse)
 	doRequestAndGetStruct("POST", marketUrl, getDefaultHeaders(r), string(jsonSendToMarket), &biwengerResponse)
-	fmt.Fprintf(w, string(structToJson(*biwengerResponse)))
+	fmt.Fprintf(w, SendApiResponse(biwengerResponse))
 
 }
 
@@ -41,7 +42,7 @@ func GetPlayersInMarket(w http.ResponseWriter, r *http.Request) {
 			playersInMarket = append(playersInMarket, PlayerInMarket{sale.Player.ID, sale.Price, sale.User.ID})
 		}
 	}
-	fmt.Fprintf(w, string(structToJson(&playersInMarket)))
+	fmt.Fprintf(w, SendApiResponse(playersInMarket))
 }
 
 func GetReceivedOffers(w http.ResponseWriter, r *http.Request) {
@@ -50,23 +51,34 @@ func GetReceivedOffers(w http.ResponseWriter, r *http.Request) {
 	for _, offer := range biwengerMarketResponse.Data.Offers {
 		playersInMarket = append(playersInMarket, ReceivedOffer{offer.ID, offer.RequestedPlayers[0], offer.Amount, offer.From.ID})
 	}
-	fmt.Fprintf(w, string(structToJson(&playersInMarket)))
+	fmt.Fprintf(w, SendApiResponse(&playersInMarket))
 }
 
 func GetMyMoney(w http.ResponseWriter, r *http.Request) {
 	biwengerMarketResponse := getBiwengerMarketResponse(r)
-	fmt.Fprintf(w, strconv.Itoa(biwengerMarketResponse.Data.Status.Balance))
+	fmt.Fprintf(w, SendApiResponse(biwengerMarketResponse.Data.Status.Balance))
 }
 
 func GetMaxBid(w http.ResponseWriter, r *http.Request) {
 	biwengerMarketResponse := getBiwengerMarketResponse(r)
-	fmt.Fprintf(w, strconv.Itoa(biwengerMarketResponse.Data.Status.MaximumBid))
+	fmt.Fprintf(w, SendApiResponse(strconv.Itoa(biwengerMarketResponse.Data.Status.MaximumBid)))
+}
+
+func GetMarketEvolution(w http.ResponseWriter, r *http.Request) {
+	biwengerMarketEvolutionResponse := getBiwengerMarketEvolutionResponse(r)
+	fmt.Fprintf(w, SendApiResponse(biwengerMarketEvolutionResponse.Data.Values))
 }
 
 func getBiwengerMarketResponse(r *http.Request) *BiwengerMarketResponse {
 	var biwengerMarketResponse = new(BiwengerMarketResponse)
 	doRequestAndGetStruct("GET", marketUrl, getDefaultHeaders(r), "", &biwengerMarketResponse)
 	return biwengerMarketResponse
+}
+
+func getBiwengerMarketEvolutionResponse(r *http.Request) *BiwengerMarketStatsResponse {
+	var biwengerMarketStatsResponse = new(BiwengerMarketStatsResponse)
+	doRequestAndGetStruct("GET", marketStatsUrl, getDefaultHeaders(r), "", &biwengerMarketStatsResponse)
+	return biwengerMarketStatsResponse
 }
 
 
@@ -128,4 +140,75 @@ type BiwengerMarketResponse struct {
 		} `json:"status"`
 	} `json:"data"`
 	Status int `json:"status"`
+}
+
+type BiwengerMarketStatsResponse struct {
+	Status int `json:"status"`
+	Data   struct {
+		Competition struct {
+			ID       int    `json:"id"`
+			Name     string `json:"name"`
+			Slug     string `json:"slug"`
+			Sport    string `json:"sport"`
+			Currency string `json:"currency"`
+			Country  string `json:"country"`
+			Enabled  bool   `json:"enabled"`
+			Type     string `json:"type"`
+		} `json:"competition"`
+		Values [][]int `json:"values"`
+		Ups    []struct {
+			OldPrice       int    `json:"oldPrice"`
+			ID             int    `json:"id"`
+			Name           string `json:"name"`
+			Slug           string `json:"slug"`
+			Position       int    `json:"position"`
+			Price          int    `json:"price"`
+			FantasyPrice   int    `json:"fantasyPrice"`
+			Country        string `json:"country"`
+			Birthday       int    `json:"birthday"`
+			Status         string `json:"status"`
+			PriceIncrement int    `json:"priceIncrement"`
+			Difference     int    `json:"difference"`
+			Team           struct {
+				ID   int    `json:"id"`
+				Name string `json:"name"`
+				Slug string `json:"slug"`
+			} `json:"team"`
+			Fitness          []int  `json:"fitness"`
+			Points           int    `json:"points"`
+			PlayedHome       int    `json:"playedHome"`
+			PlayedAway       int    `json:"playedAway"`
+			PointsHome       int    `json:"pointsHome"`
+			PointsAway       int    `json:"pointsAway"`
+			PointsLastSeason int    `json:"pointsLastSeason"`
+			StatusText       string `json:"statusText,omitempty"`
+		} `json:"ups"`
+		Downs []struct {
+			OldPrice       int    `json:"oldPrice"`
+			ID             int    `json:"id"`
+			Name           string `json:"name"`
+			Slug           string `json:"slug"`
+			Position       int    `json:"position"`
+			Price          int    `json:"price"`
+			FantasyPrice   int    `json:"fantasyPrice"`
+			Country        string `json:"country"`
+			Birthday       int    `json:"birthday"`
+			Status         string `json:"status"`
+			PriceIncrement int    `json:"priceIncrement"`
+			Difference     int    `json:"difference"`
+			Team           struct {
+				ID   int    `json:"id"`
+				Name string `json:"name"`
+				Slug string `json:"slug"`
+			} `json:"team"`
+			Fitness          []interface{} `json:"fitness"`
+			Points           int           `json:"points"`
+			PlayedHome       int           `json:"playedHome"`
+			PlayedAway       int           `json:"playedAway"`
+			PointsHome       int           `json:"pointsHome"`
+			PointsAway       int           `json:"pointsAway"`
+			PointsLastSeason int           `json:"pointsLastSeason"`
+			StatusText       string        `json:"statusText,omitempty"`
+		} `json:"downs"`
+	} `json:"data"`
 }

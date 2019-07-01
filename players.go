@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/pablopb3/biwenger-api/dao"
 	"github.com/tidwall/gjson"
@@ -16,15 +15,11 @@ const (
 )
 
 func GetPlayerById(w http.ResponseWriter, r *http.Request) {
-
-	//json := GetAllPlayers()
-
 	id := getNumericParamFromQueryUrl(r, "id")
 	playerAlias := dao.GetAliasByPlayerId(id)
 	player := new(Player)
 	doRequestAndGetStruct("GET", strings.Replace(getPlayerUrl, playerAliasMacro, playerAlias, 1), getPlayersHeaders(), "", &player)
-	playerJson, _ := json.Marshal(player)
-	fmt.Fprintf(w, string(playerJson))
+	fmt.Fprintf(w, SendApiResponse(player))
 }
 
 func UpdatePlayersAliasInDb(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +33,7 @@ func UpdatePlayersAliasInDb(w http.ResponseWriter, r *http.Request) {
 		println(playerIdAliasMap.Alias)
 		return true // keep iterating
 	})
+	fmt.Fprintf(w, SendApiResponseWithMessage("", "db successfully updated with players alias!"))
 }
 
 func getPlayersHeaders() map[string]string {
