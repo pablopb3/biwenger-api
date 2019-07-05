@@ -32,6 +32,8 @@ func main() {
 
 	router.HandleFunc("/"+v+"/updatePlayersAlias", UpdatePlayersAliasInDb)
 
+	router.HandleFunc("/"+v+"/tweet", Tweet)
+
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
