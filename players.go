@@ -11,7 +11,7 @@ import (
 const (
 	playerAliasMacro = "{playerAlias}"
 	getAllPlayersUrl = "https://cf.biwenger.com/api/v2/competitions/la-liga/data?lang=en&score=2" //2 sofascore
-	getPlayerUrl     = "https://cf.biwenger.com/api/v2/players/la-liga/" + playerAliasMacro + "?fields=*%2Cteam%2Cfitness%2Creports(points%2Chome%2Cevents%2Cstatus(status%2CstatusText)%2Cmatch(*%2Cround%2Chome%2Caway)%2Cstar)%2Cprices%2Ccompetition%2Cseasons%2Cnews%2Cthreads&score=1&lang=en"
+	getPlayerUrl     = "https://cf.biwenger.com/api/v2/players/la-liga/" + playerAliasMacro + "?fields=*%2Cteam%2Cfitness%2Creports(points%2Chome%2Cevents%2Cstatus(status%2CstatusText)%2Cmatch(*%2Cround%2Chome%2Caway)%2Cstar)%2Cprices%2Ccompetition%2Cseasons%2Cnews%2Cthreads&score=2&lang=en"
 )
 
 func GetPlayerById(w http.ResponseWriter, r *http.Request) {
@@ -23,7 +23,7 @@ func GetPlayerById(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdatePlayersAliasInDb(w http.ResponseWriter, r *http.Request) {
-	objectJson := doRequestAndGetJson("GET", getAllPlayersUrl, getDefaultHeaders(r), "")
+	objectJson := doRequestAndGetJson("GET", getAllPlayersUrl, make(map[string]string), "")
 	players := gjson.Get(objectJson, "data.players")
 	players.ForEach(func(key, value gjson.Result) bool {
 		playerId := gjson.Get(value.String(), "id")
