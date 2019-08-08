@@ -1,21 +1,42 @@
-version: '3'
+version: '3.5'
 services:
-   biwenger-api:
+  biwenger-api:
       build: .
+      image: pablopb3/biwenger-api
+      container_name: biwenger-api
       restart: always
+      networks:
+        - biwenger-network
       expose:
          - 8080
       ports:
          - "8080:8080"
       depends_on:
         - mongodb
-   mongodb:
+        - nginx
+
+  mongodb:
       image: mongo:latest
+      container_name: biwenger-mongo
       volumes:
          - ./data/mongodb:/data/db
+      networks:
+        - biwenger-network
       expose:
         - 27017
       ports:
         - "27017:27017"
       restart: always
       command: --smallfiles
+
+  nginx:
+    image: nginx:latest
+    container_name: biwenger-nginx
+    networks:
+      - biwenger-network
+    restart: always
+
+networks:
+   biwenger-network:
+      name: biwenger-network
+      driver: bridge
