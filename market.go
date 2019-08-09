@@ -26,7 +26,7 @@ func SendPlayersToMarket(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	price := r.FormValue("price")
 	fmt.Println(string(price))
-	sendToMarket := SendToMarket{"team", "125"}
+	sendToMarket := SendToMarket{"team", "500"}
 	jsonSendToMarket := structToJson(sendToMarket)
 	var biwengerResponse = new(BiwengerStatusResponse)
 	doRequestAndGetStruct("POST", marketUrl, getDefaultHeaders(r), string(jsonSendToMarket), &biwengerResponse)
