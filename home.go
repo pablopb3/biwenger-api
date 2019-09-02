@@ -7,7 +7,6 @@ import (
 	"time"
 )
 
-
 const getHomeUrl = "https://biwenger.as.com/api/v2/home"
 
 func GetDaysToNextRound(w http.ResponseWriter, r *http.Request) {
@@ -20,7 +19,14 @@ func GetDaysToNextRound(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetDaysToNextRoundFromHomeResponse(events []Event) int {
-	nextRound, err := strconv.ParseInt(strconv.Itoa(events[0].Date), 10, 64)
+	nextEvent := new(Event)
+	for _, event := range events {
+		if event.Type == "roundStart" {
+			nextEvent = &event
+			break
+		}
+	}
+	nextRound, err := strconv.ParseInt(strconv.Itoa(nextEvent.Date), 10, 64)
 	tm := time.Unix(nextRound, 0)
 	fmt.Println(tm)
 	now := time.Now()
@@ -29,7 +35,7 @@ func GetDaysToNextRoundFromHomeResponse(events []Event) int {
 	if err != nil {
 		panic(err)
 	}
-	return int(diff.Hours()/24)
+	return int(diff.Hours() / 24)
 }
 
 type Home struct {
@@ -99,8 +105,8 @@ type Account struct {
 }
 type Data struct {
 	League      League   `json:"league"`
-	User        HomeUser     `json:"user"`
+	User        HomeUser `json:"user"`
 	Competition string   `json:"competition"`
-	Events      []Event `json:"events"`
+	Events      []Event  `json:"events"`
 	Account     Account  `json:"account"`
 }

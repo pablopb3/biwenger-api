@@ -13,7 +13,6 @@ services:
          - "8080:8080"
       depends_on:
         - mongodb
-        - nginx
 
   mongodb:
       image: mongo:latest
@@ -28,13 +27,6 @@ services:
         - "27017:27017"
       restart: always
       command: --smallfiles
-
-  nginx:
-    image: nginx:latest
-    container_name: biwenger-nginx
-    networks:
-      - biwenger-network
-    restart: always
 
 networks:
    biwenger-network:
