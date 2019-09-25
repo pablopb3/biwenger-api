@@ -4,7 +4,7 @@ services:
       build: .
       image: pablopb3/biwenger-api
       container_name: biwenger-api
-      restart: always
+      restart: unless-stopped
       networks:
         - biwenger-network
       expose:
@@ -16,17 +16,19 @@ services:
 
   mongodb:
       image: mongo:latest
+      environment:
+          MONGO_INITDB_DATABASE: biwenger
       container_name: biwenger-mongo
       volumes:
          - ./data/mongodb:/data/db
+         - ./db-scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       networks:
         - biwenger-network
       expose:
         - 27017
       ports:
         - "27017:27017"
-      restart: always
-      command: --smallfiles
+      restart: unless-stopped
 
 networks:
    biwenger-network:

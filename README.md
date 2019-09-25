@@ -7,24 +7,47 @@ Built with docker, go and mongodb
 
 ## Getting started
 
-docker-compose up in the project root
+In the project root run:
 
-To test everything is working just call: http://localhost:8080/
+```
+docker-compose up -d
+```
+
+To test everything is working just call: `http://localhost:8080/v1/`
 
 ## How to use
 
 ### Login
 
 You will need to perform the following request in order to get the access token:
-curl --header "Content-Type: application/json"   --request POST   
---data '{"email":"$$YOUREMAIL$$","password":"$$YOURPASSWORD$$"}' http://localhost:8080/login
+
+```
+curl --header "Content-Type: application/json" --request POST --data '{"email":"$$YOUREMAIL$$","password":"$$YOURPASSWORD$$"}' http://localhost:8080/v1/login
+```
 
 ### Api Call Example
 
 Once you got the token, you can use it in a real call:
-curl --header "Content-Type: application/json" --request GET  
--H "authorization":"Bearer $$YOURTOKEN$$" 
-http://localhost:8080/getMyPlayers
+
+```
+curl --header "Content-Type: application/json" --request GET -H "authorization":"Bearer $$YOURTOKEN$$" http://localhost:8080/v1/getMyPlayers
+```
+
+### Test your Setup
+
+To test that the database is storing data you can run the following call:
+
+```
+curl --header "Content-Type: application/json" --request GET -H "authorization":"Bearer $$YOURTOKEN$$" http://localhost:8080/v1/updatePlayersAlias
+```
+
+Then connect to the *biwenger* database (you will need a mongodb client installed)
+and check that there is data in the players collection:
+
+```
+> use biwenger
+> db.players.find()
+```
 
 ## Development
 
