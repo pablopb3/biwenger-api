@@ -20,7 +20,7 @@ services:
           MONGO_INITDB_DATABASE: biwenger
       container_name: biwenger-mongo
       volumes:
-         - ./data/mongodb:/data/db
+         - /data/db
          - ./db-scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
       networks:
         - biwenger-network
