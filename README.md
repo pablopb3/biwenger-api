@@ -13,7 +13,11 @@ In the project root run:
 docker-compose up -d
 ```
 
-To test everything is working just call: `http://localhost:8080/v1/`
+To test everything is working just call: 
+
+```
+http://localhost:8080/v1/
+```
 
 ## How to use
 
@@ -22,32 +26,52 @@ To test everything is working just call: `http://localhost:8080/v1/`
 You will need to perform the following request in order to get the access token:
 
 ```
-curl --header "Content-Type: application/json" --request POST --data '{"email":"$$YOUREMAIL$$","password":"$$YOURPASSWORD$$"}' http://localhost:8080/v1/login
+curl -H "Content-Type: application/json" --request POST --data '{"email":"$$YOUREMAIL$$","password":"$$YOURPASSWORD$$"}' http://localhost:8080/v1/login
 ```
 
-### Api Call Example
+## Config
 
-Once you got the token, you can use it in a real call:
+### Account
+
+Now that everything seems to work, you must fill the application.properties file with 
+your account details.
+
+To obtain the userId, leagueId and biwengerVersion values, you have to access to your 
+biwenger account through your browser and capture any request done by the browser. For 
+this purpose you should use the browser console. For instance, when you click 'Home' on
+your biwenger session, there's a request with the headers x-league, x-user and x-version.
+Those are the values for your userId, leagueId and biwengerVersion respectively. 
+
+Also, you can create a twitter account and set the values in the applications.properties
+if you want to activate the tweet functionality.
+
+### DB
+
+For everything to work fine, you'll need some players information on your mongodb. For this
+you should run the following call:
 
 ```
-curl --header "Content-Type: application/json" --request GET -H "authorization":"Bearer $$YOURTOKEN$$" http://localhost:8080/v1/getMyPlayers
+curl -H "Content-Type: application/json" --request GET http://localhost:8080/v1/updatePlayersAlias
 ```
 
-### Test your Setup
-
-To test that the database is storing data you can run the following call:
-
-```
-curl --header "Content-Type: application/json" --request GET -H "authorization":"Bearer $$YOURTOKEN$$" http://localhost:8080/v1/updatePlayersAlias
-```
-
-Then connect to the *biwenger* database (you will need a mongodb client installed)
+Then connect to the *biwenger* database (you will need a mongodb client)
 and check that there is data in the players collection:
 
 ```
 > use biwenger
 > db.players.find()
 ```
+
+
+## Api Calls
+
+Once you got the token, you can use it in a real call:
+
+```
+curl -H "Content-Type: application/json" --request GET -H "authorization":"Bearer $$YOURTOKEN$$" http://localhost:8080/v1/getMyPlayers
+```
+
+All the api calls examples are provided in resources/requestsExamples.txt
 
 ## Development
 
@@ -62,6 +86,15 @@ docker-compose up
 * GetPlayerById
 * GetMyPlayers
 * SetLineUp
+* GetMyMoney
+* GetMaxBid
+* GetMarketEvolution
+* GetPlayersInMarket
+* SendPlayersToMarket
+* GetReceivedOffers
+* AcceptOffer
+* PlaceOffer
+* Tweet
 
 ## Licensing
 MIT: http://rem.mit-license.org

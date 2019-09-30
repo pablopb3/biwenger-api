@@ -2,7 +2,7 @@ curl
 -H "Content-Type: application/json" 
 --request POST 
 --data '{"email":"$$YOUREMAIL$$","password":"$$YOURPASSWORD$$"}' 
-http://localhost:8080/login
+http://localhost:8080/v1/login
 
 --------------------------------------------------
 
@@ -10,7 +10,7 @@ curl
 -H "Content-Type: application/json"
 -H "authorization":"Bearer $$YOURTOKEN$$"
 --request GET
-http://localhost:8080/updatePlayersAlias
+http://localhost:8080/v1/updatePlayersAlias
 
 -------------------------------------------------
 
@@ -18,7 +18,7 @@ curl
 -H "Content-Type: application/json"
 -H "authorization":"Bearer $$YOURTOKEN$$"
 --request GET
-http://localhost:8080/GetPlayerId?id=$$YOURPLAYERID$$
+http://localhost:8080/v1/GetPlayerId?id=$$YOURPLAYERID$$
 
 -------------------------------------------------
 
@@ -26,7 +26,7 @@ curl
 -H "Content-Type: application/json"   
 -H "authorization":"Bearer $$YOURTOKEN$$" 
 --request GET  
-http://localhost:8080/getMyPlayers
+http://localhost:8080/v1/getMyPlayers
 
 -------------------------------------------------
 
@@ -35,7 +35,74 @@ curl
 -H "authorization":"Bearer $$YOURTOKEN$$" 
 --request POST 
 --data '{"type":"4-4-2","playersID":[11677,1752,9078,2160,17052,944,9071,1043,10750,10498,15568]}' 
-http://localhost:8080/setLineUp
+http://localhost:8080/v1/setLineUp
 
 -------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request GET
+http://localhost:8080/v1/getMyMoney
+
+-------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request GET
+http://localhost:8080/v1/getMaxBid
+
+-------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request GET
+http://localhost:8080/v1/getMarketEvolution
+
+-------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request GET
+http://localhost:8080/v1/getPlayersInMarket
+
+-------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request POST
+--data '{"price":"$$MARKET_VALUE_PERCENTAGE$$"}'
+http://localhost:8080/v1/sendPlayersToMarket
+
+-------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request GET
+http://localhost:8080/v1/getReceivedOffers
+
+-------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request GET
+http://localhost:8080/v1/acceptOffer?id=$$OFFER_ID$$
+
+-------------------------------------------------
+
+curl
+-H "Content-Type: application/json"
+-H "authorization":"Bearer $$YOURTOKEN$$"
+--request POST
+--data '{"to":$$SELLER_USER_ID$$,"type":"purchase","amount":$$BID_PRICE$$,"requestedPlayers":[$$PLAYER_IN_MARKET_ID$$]}'
+http://localhost:8080/v1/placeOffer
+
+-------------------------------------------------
+
 
