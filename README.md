@@ -45,6 +45,12 @@ Those are the values for your userId, leagueId and biwengerVersion respectively.
 Also, you can create a twitter account and set the values in the applications.properties
 if you want to activate the tweet functionality.
 
+At this point, you have to build again your docker image:
+
+```
+docker-compose up -d --build
+```
+
 ### DB
 
 For everything to work fine, you'll need some players information on your mongodb. For this
@@ -76,8 +82,9 @@ All the api calls examples are provided in resources/requestsExamples.txt
 ## Development
 
 After doing any changes in the code, a new docker image should be created:
-docker-compose build
-docker-compose up
+```
+docker-compose up -d --build
+```
 
 ## Current Features
 
