@@ -1,112 +1,96 @@
 package main
 
 import (
-	"fmt"
+	"encoding/json"
+	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
-const getHomeUrl = "https://biwenger.as.com/api/v2/home"
-
-func GetDaysToNextRound(w http.ResponseWriter, r *http.Request) {
-
-	headers := getDefaultHeaders(r)
-	homeBiwengerResponse := new(Home)
-	doRequestAndGetStruct("GET", getHomeUrl, headers, "", &homeBiwengerResponse)
-	daysToNextRound := GetDaysToNextRoundFromHomeResponse(homeBiwengerResponse.Data.Events)
-	fmt.Fprintf(w, SendApiResponse(daysToNextRound))
-}
-
-func GetDaysToNextRoundFromHomeResponse(events []Event) int {
-	nextEvent := new(Event)
-	for _, event := range events {
-		if event.Type == "roundStart" {
-			nextEvent = &event
-			break
-		}
-	}
-	nextRound, err := strconv.ParseInt(strconv.Itoa(nextEvent.Date), 10, 64)
-	tm := time.Unix(nextRound, 0)
-	fmt.Println(tm)
-	now := time.Now()
-	fmt.Println(now)
-	diff := tm.Sub(now)
-	if err != nil {
-		panic(err)
-	}
-	return int(diff.Hours() / 24)
-}
+const homeURL = "/home"
 
 type Home struct {
 	Status int  `json:"status"`
 	Data   Data `json:"data"`
 }
-type From struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-	Slug string `json:"slug"`
+
+type Data struct {
+	Events []Event `json:"events"`
 }
-type Team struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-	Slug string `json:"slug"`
-}
-type Content struct {
-	Type   string `json:"type"`
-	Player int    `json:"player"`
-	From   From   `json:"from,omitempty"`
-	Team   Team   `json:"team,omitempty"`
-}
-type Board struct {
-	Type    string      `json:"type"`
-	Title   string      `json:"title"`
-	Content []Content   `json:"content"`
-	Date    int         `json:"date"`
-	Fixed   int         `json:"fixed"`
-	Author  interface{} `json:"author"`
-}
-type League struct {
-	ID           int     `json:"id"`
-	Name         string  `json:"name"`
-	Icon         string  `json:"icon"`
-	Type         string  `json:"type"`
-	Mode         string  `json:"mode"`
-	Board        []Board `json:"board"`
-	Participants int     `json:"participants"`
-}
-type Status struct {
-	Points  int `json:"points"`
-	Balance int `json:"balance"`
-	Offers  int `json:"offers"`
-	Bids    int `json:"bids"`
-}
-type HomeUser struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Icon     string `json:"icon"`
-	Group    string `json:"group"`
-	Position int    `json:"position"`
-	Type     string `json:"type"`
-	Status   Status `json:"status"`
-}
-type Round struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Short string `json:"short"`
-}
+
 type Event struct {
 	Type  string `json:"type"`
 	Date  int    `json:"date"`
 	Round Round  `json:"round"`
 }
-type Account struct {
-	UnreadMessages bool `json:"unreadMessages"`
+
+type Round struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Short string `json:"short"`
 }
-type Data struct {
-	League      League   `json:"league"`
-	User        HomeUser `json:"user"`
-	Competition string   `json:"competition"`
-	Events      []Event  `json:"events"`
-	Account     Account  `json:"account"`
+
+func (cli client) getDaysToNextRound(c *gin.Context) {
+	req := request{
+		method:   "GET",
+		endpoint: homeURL,
+		token:    c.GetHeader("authorization"),
+	}
+
+	body, err := cli.doRequest(req)
+	if err != nil {
+		log.Println("error doing request for home", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var home Home
+	err = json.Unmarshal(body, &home)
+	if err != nil {
+		log.Println("error unmarshalling response body to home", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	daysToNextRound, err := calculateDays(home.Data.Events)
+	if err != nil {
+		log.Println("error calculating days", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, daysToNextRound)
+}
+
+func calculateDays(events []Event) (int, error) {
+	e := func(events []Event) *Event {
+		for _, event := range events {
+			if event.Type == "roundStart" { // TODO move to constant
+				return &event
+			}
+		}
+		return nil
+	}(events)
+	if e == nil {
+		return 0, errors.New("no events found with type roundStart")
+	}
+
+	nextRound, err := strconv.ParseInt(strconv.Itoa(e.Date), 10, 64)
+	if err != nil {
+		log.Println("error parsing int", err)
+		return 0, nil
+	}
+
+	tm := time.Unix(nextRound, 0)
+	now := time.Now()
+	diff := tm.Sub(now)
+	if err != nil {
+		log.Println("error substracting now to nextround", err)
+		return 0, nil
+	}
+
+	return int(diff.Hours() / 24), nil
 }

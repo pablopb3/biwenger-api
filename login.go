@@ -2,16 +2,14 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-type Token struct {
-	Token string `json:"token"`
-}
-
 type Login struct {
-	Token Token `json:"login"`
+	Token string `json:"token"`
 }
 
 type User struct {
@@ -19,31 +17,35 @@ type User struct {
 	Password string `json:"password"`
 }
 
-const loginUrl string = "https://biwenger.as.com/api/v2/auth/login"
+const loginURL = "/auth/login"
 
-func login(w http.ResponseWriter, r *http.Request) {
-
+func (cli client) login(c *gin.Context) {
 	var user User
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&user)
-	if err != nil {
-		panic(err)
+	if err := c.BindJSON(&user); err != nil {
+		log.Println("error binding user", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
 	}
-	userJson, err := json.Marshal(user)
+
+	userJSON, err := json.Marshal(user)
 	if err != nil {
-		panic(err)
+		log.Println("error marshalling user", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
-	headers := getLoginHeaders()
 
-	token := new(Token)
-	doRequestAndGetStruct("POST", loginUrl, headers, string(userJson), token)
-	login := Login{*token}
-	fmt.Fprintf(w, SendApiResponse(login))
-}
+	req := request{
+		method:   "POST",
+		body:     userJSON,
+		endpoint: loginURL,
+	}
 
-func getLoginHeaders() map[string]string {
+	body, err := cli.doRequest(req)
+	if err != nil {
+		log.Println("error doing request for login", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
-	var m = make(map[string]string)
-	m["Content-Type"] = "application/json"
-	return m
+	c.JSON(http.StatusOK, Login{Token: string(body)})
 }
