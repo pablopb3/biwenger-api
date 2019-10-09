@@ -9,13 +9,7 @@ import (
 	"github.com/magiconair/properties"
 )
 
-func newClient(apiURL string) *client {
-	return &client{
-		apiURL: apiURL,
-	}
-}
-
-type client struct {
+type Client struct {
 	apiURL string
 }
 
@@ -26,7 +20,7 @@ type request struct {
 	token    string
 }
 
-func (c *client) doRequest(r request) ([]byte, error) {
+func (c Client) doRequest(r request) ([]byte, error) {
 	req, err := http.NewRequest(r.method, c.apiURL+r.endpoint, bytes.NewBuffer(r.body))
 	if err != nil {
 		log.Println("error creating new request", err)
@@ -45,8 +39,8 @@ func (c *client) doRequest(r request) ([]byte, error) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	Client := &http.Client{}
+	resp, err := Client.Do(req)
 	if err != nil {
 		log.Println("error executing request", err)
 		return nil, err
