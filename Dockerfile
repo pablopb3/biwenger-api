@@ -1,13 +1,12 @@
 FROM golang:latest
 
 WORKDIR /go/src/github.com/pablopb3/biwenger-api/
-RUN go get "gopkg.in/mgo.v2/bson" && \
-	go get "gopkg.in/mgo.v2" && \
-	go get "github.com/tidwall/gjson" && \
-	go get "github.com/gorilla/mux" && \
-	go get "github.com/magiconair/properties" && \
-	go get "github.com/dghubble/go-twitter/twitter" && \
-	go get "github.com/dghubble/oauth1"
+
+# Install dep
+RUN apk add --no-cache --virtual .build-deps git \
+    && go get -u github.com/golang/dep/cmd/dep
+
+RUN /go/bin/dep ensure
 
 ADD . .
 RUN go build -o /go/bin/biwenger-api .
