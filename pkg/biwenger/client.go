@@ -1,4 +1,4 @@
-package main
+package biwenger
 
 import (
 	"bytes"
@@ -9,29 +9,29 @@ import (
 	"github.com/magiconair/properties"
 )
 
-type Client struct {
-	apiURL string
+const baseURL = "https://biwenger.as.com/api/v2"
+
+type Client struct{}
+
+type Request struct {
+	Endpoint string
+	Method   string
+	Body     []byte
+	Token    string
 }
 
-type request struct {
-	endpoint string
-	method   string
-	body     []byte
-	token    string
-}
-
-func (c Client) doRequest(r request) ([]byte, error) {
-	req, err := http.NewRequest(r.method, c.apiURL+r.endpoint, bytes.NewBuffer(r.body))
+func (c Client) DoRequest(r Request) ([]byte, error) {
+	req, err := http.NewRequest(r.Method, baseURL+r.Endpoint, bytes.NewBuffer(r.Body))
 	if err != nil {
 		log.Println("error creating new request", err)
 		return nil, err
 	}
 
 	// TODO improve this check
-	if r.endpoint != loginURL {
+	if r.Endpoint != "/auth/login" {
 		// TODO move it to init()
 		p := properties.MustLoadFile("application.properties", properties.UTF8)
-		req.Header.Set("authorization", "Bearer "+r.token)
+		req.Header.Set("authorization", "Bearer "+r.Token)
 		req.Header.Set("x-lang", "en")
 		req.Header.Set("x-league", p.GetString("leagueId", ""))
 		req.Header.Set("x-user", p.GetString("userId", ""))

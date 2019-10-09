@@ -16,7 +16,7 @@ docker-compose up -d
 To test everything is working just call: 
 
 ```
-http://localhost:8080/v1/
+http://localhost:8080/
 ```
 
 ## How to use
@@ -26,7 +26,7 @@ http://localhost:8080/v1/
 You will need to perform the following request in order to get the access token:
 
 ```
-curl -H "Content-Type: application/json" --request POST --data '{"email":"$$YOUREMAIL$$","password":"$$YOURPASSWORD$$"}' http://localhost:8080/v1/login
+curl -H "Content-Type: application/json" --request POST --data '{"email":"$$YOUREMAIL$$","password":"$$YOURPASSWORD$$"}' http://localhost:8080/login
 ```
 
 ## Config
@@ -51,7 +51,7 @@ For everything to work fine, you'll need some players information on your mongod
 you should run the following call:
 
 ```
-curl -H "Content-Type: application/json" --request GET http://localhost:8080/v1/updatePlayersAlias
+curl -H "Content-Type: application/json" --request PUT http://localhost:8080/players
 ```
 
 Then connect to the *biwenger* database (you will need a mongodb client)
@@ -68,7 +68,7 @@ and check that there is data in the players collection:
 Once you got the token, you can use it in a real call:
 
 ```
-curl -H "Content-Type: application/json" --request GET -H "authorization":"Bearer $$YOURTOKEN$$" http://localhost:8080/v1/getMyPlayers
+curl -H "Content-Type: application/json" --request GET -H "authorization":"Bearer $$YOURTOKEN$$" http://localhost:8080/squad
 ```
 
 All the api calls examples are provided in resources/requestsExamples.txt
@@ -82,19 +82,19 @@ docker-compose up
 ## Current Features
 
 * Login
-* UpdatePlayersAlias
-* GetPlayerById
-* GetMyPlayers
-* SetLineUp
-* GetMyMoney
-* GetMaxBid
-* GetMarketEvolution
-* GetPlayersInMarket
-* SendPlayersToMarket
-* GetReceivedOffers
-* AcceptOffer
-* PlaceOffer
-* Tweet
+* Get your entire squad
+* Put your line up
+* Get your money
+* Get your max bid
+* Get the market evolution
+* Put your squad to the market
+* Get all players in the market
+* Place an offer to the market
+* Get the offers from the market
+* Accept an offer for a player
+* Get all players
+* Update player alias in your database
+* Get the days left for the next round
 
 ## Licensing
 MIT: http://rem.mit-license.org

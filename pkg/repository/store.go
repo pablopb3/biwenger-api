@@ -1,4 +1,4 @@
-package main
+package repository
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 )
 
 type Store struct {
-	c *mgo.Collection
+	C *mgo.Collection
 }
 
 type PlayerDB struct {
@@ -17,9 +17,9 @@ type PlayerDB struct {
 	Alias    string        `bson:"alias" json:"alias"`
 }
 
-func (s Store) getAlias(id string) (string, error) {
+func (s Store) GetAlias(id string) (string, error) {
 	var player PlayerDB
-	err := s.c.Find(bson.M{"_id": id}).One(&player)
+	err := s.C.Find(bson.M{"_id": id}).One(&player)
 	if err != nil {
 		log.Printf("error finding player id %s:\n%s", id, err)
 		return "", err
@@ -28,6 +28,6 @@ func (s Store) getAlias(id string) (string, error) {
 	return player.Alias, nil
 }
 
-func (s Store) save(player PlayerDB) error {
-	return s.c.Insert(player)
+func (s Store) Save(player PlayerDB) error {
+	return s.C.Insert(player)
 }
