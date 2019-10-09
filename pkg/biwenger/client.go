@@ -2,6 +2,7 @@ package biwenger
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -31,7 +32,7 @@ func (c Client) DoRequest(r Request) ([]byte, error) {
 	if r.Endpoint != "/auth/login" {
 		// TODO move it to init()
 		p := properties.MustLoadFile("application.properties", properties.UTF8)
-		req.Header.Set("authorization", "Bearer "+r.Token)
+		req.Header.Set("authorization", r.Token)
 		req.Header.Set("x-lang", "en")
 		req.Header.Set("x-league", p.GetString("leagueId", ""))
 		req.Header.Set("x-user", p.GetString("userId", ""))
@@ -46,6 +47,10 @@ func (c Client) DoRequest(r Request) ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error not statusOK, StatusCode: %d", resp.StatusCode)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
