@@ -2,7 +2,6 @@ version: '3.5'
 services:
   biwenger-api:
       build: .
-      image: pablopb3/biwenger-api
       container_name: biwenger-api
       restart: unless-stopped
       networks:

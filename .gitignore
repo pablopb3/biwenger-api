@@ -2,3 +2,5 @@
 biwenger-api
 .idea
 application_local.properties
+biwenger-api.iml
+vendor/

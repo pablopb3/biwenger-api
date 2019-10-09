@@ -1,0 +1,19 @@
+[prune]
+  go-tests = true
+  unused-packages = true
+
+[[constraint]]
+  name = "github.com/gin-gonic/gin"
+  version = "v1.4.0"
+
+[[constraint]]
+  name = "gopkg.in/mgo.v2"
+  branch = "v2"
+
+[[constraint]]
+  name = "github.com/magiconair/properties"
+  version = "v1.8.1"
+
+[[constraint]]
+  name = "github.com/tidwall/gjson"
+  version = "v1.3.2"
