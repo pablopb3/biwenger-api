@@ -19,7 +19,7 @@ type User struct {
 
 const loginURL = "/auth/login"
 
-func (cli client) login(c *gin.Context) {
+func (cli Client) login(c *gin.Context) {
 	var user User
 	if err := c.BindJSON(&user); err != nil {
 		log.Println("error binding user", err)

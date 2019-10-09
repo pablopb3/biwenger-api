@@ -2,35 +2,87 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-const offersUrl string = "https://biwenger.as.com/api/v2/offers/"
+const offersURL string = "/offers"
 
-func AcceptReceivedOffer(w http.ResponseWriter, r *http.Request) {
-
-	r.ParseForm()
-	offerId := r.FormValue("id")
-	url := offersUrl + offerId
+func (cli Client) AcceptOffer(c *gin.Context) {
+	id := c.Param("id")
 	actionToffer := ActionToOffer{"accepted"}
-	jsonActionToOffer := structToJson(actionToffer)
-	var acceptOfferBiwengerResponse = new(AcceptOfferBiwengerResponse)
-	doRequestAndGetStruct("PUT", url, getDefaultHeaders(r), string(jsonActionToOffer), &acceptOfferBiwengerResponse)
-	fmt.Fprintf(w, SendApiResponse(acceptOfferBiwengerResponse))
+
+	offerJSON, err := json.Marshal(actionToffer)
+	if err != nil {
+		log.Println("error marshalling actionToOffer", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	req := request{
+		method:   "PUT",
+		endpoint: offersURL + "/" + id,
+		body:     offerJSON,
+	}
+
+	body, err := cli.doRequest(req)
+	if err != nil {
+		log.Printf("error doing request for getting accepting offer with id %s:\n%s", id, err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var acceptOfferResponse AcceptOfferBiwengerResponse
+	err = json.Unmarshal(body, &acceptOfferResponse)
+	if err != nil {
+		log.Println("error unmarshalling response body to AcceptOfferBiwengerResponse", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, acceptOfferResponse)
 
 }
 
-func PlaceOffer(w http.ResponseWriter, r *http.Request) {
+func (cli Client) PlaceOffer(c *gin.Context) {
+	var placeOfferBody PlaceOfferBody
+	if err := c.BindJSON(&placeOfferBody); err != nil {
+		log.Println("error binding placeOfferBody", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
-	placeOfferBody := new(PlaceOfferBody)
-	getJsonBody(r, &placeOfferBody)
-	jsonPlaceOffer, _ := json.Marshal(placeOfferBody)
-	headers := getDefaultHeaders(r)
-	placeOfferBiwengerResponse := new(PlaceOfferBiwengerResponse)
-	doRequestAndGetStruct("POST", offersUrl, headers, string(jsonPlaceOffer), &placeOfferBiwengerResponse)
-	fmt.Fprintf(w, SendApiResponse(placeOfferBiwengerResponse))
+	placeOfferBodyJSON, err := json.Marshal(placeOfferBody)
+	if err != nil {
+		log.Println("error marshalling placeOfferBody", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
 
+	req := request{
+		method:   "POST",
+		body:     placeOfferBodyJSON,
+		endpoint: offersURL,
+	}
+
+	body, err := cli.doRequest(req)
+	if err != nil {
+		log.Println("error doing request for login", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var placeOfferBiwengerResponse PlaceOfferBiwengerResponse
+	err = json.Unmarshal(body, &placeOfferBiwengerResponse)
+	if err != nil {
+		log.Println("error unmarshalling response body to placeOfferBiwengerResponse", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, placeOfferBiwengerResponse)
 }
 
 type ActionToOffer struct {

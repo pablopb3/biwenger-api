@@ -1,104 +1,28 @@
 package main
 
 import (
-	"fmt"
-	"github.com/magiconair/properties"
+	"encoding/json"
+	"log"
 	"net/http"
-	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/magiconair/properties"
 )
 
-const marketUrl string = "https://biwenger.as.com/api/v2/market"
-const marketStatsUrl string = "https://cf.biwenger.com/api/v2/competitions/la-liga/market?interval=day&includeValues=true"
-
-type SendToMarket struct {
-	Type  string `json:"type"`
-	Price string    `json:"price"`
-}
-
-type BiwengerStatusResponse struct {
-	Status int `json:"status"`
-	Data   string    `json:"data"`
-}
-
-
-func SendPlayersToMarket(w http.ResponseWriter, r *http.Request) {
-
-	r.ParseForm()
-	price := r.FormValue("price")
-	fmt.Println(string(price))
-	sendToMarket := SendToMarket{"team", "500"}
-	jsonSendToMarket := structToJson(sendToMarket)
-	var biwengerResponse = new(BiwengerStatusResponse)
-	doRequestAndGetStruct("POST", marketUrl, getDefaultHeaders(r), string(jsonSendToMarket), &biwengerResponse)
-	fmt.Fprintf(w, SendApiResponse(biwengerResponse))
-
-}
-
-func GetPlayersInMarket(w http.ResponseWriter, r *http.Request) {
-	var playersInMarket []PlayerInMarket
-	biwengerMarketResponse := getBiwengerMarketResponse(r)
-	for _, sale := range biwengerMarketResponse.Data.Sales {
-		if (!IsMyPlayer(sale.User.ID)) {
-			playersInMarket = append(playersInMarket, PlayerInMarket{sale.Player.ID, sale.Price, sale.User.ID})
-		}
-	}
-	fmt.Fprintf(w, SendApiResponse(playersInMarket))
-}
-
-func GetReceivedOffers(w http.ResponseWriter, r *http.Request) {
-	var playersInMarket []ReceivedOffer
-	biwengerMarketResponse := getBiwengerMarketResponse(r)
-	for _, offer := range biwengerMarketResponse.Data.Offers {
-		playersInMarket = append(playersInMarket, ReceivedOffer{offer.ID, offer.RequestedPlayers[0], offer.Amount, offer.From.ID})
-	}
-	fmt.Fprintf(w, SendApiResponse(&playersInMarket))
-}
-
-func GetMyMoney(w http.ResponseWriter, r *http.Request) {
-	biwengerMarketResponse := getBiwengerMarketResponse(r)
-	fmt.Fprintf(w, SendApiResponse(biwengerMarketResponse.Data.Status.Balance))
-}
-
-func GetMaxBid(w http.ResponseWriter, r *http.Request) {
-	biwengerMarketResponse := getBiwengerMarketResponse(r)
-	fmt.Fprintf(w, SendApiResponse(strconv.Itoa(biwengerMarketResponse.Data.Status.MaximumBid)))
-}
-
-func GetMarketEvolution(w http.ResponseWriter, r *http.Request) {
-	biwengerMarketEvolutionResponse := getBiwengerMarketEvolutionResponse(r)
-	fmt.Fprintf(w, SendApiResponse(biwengerMarketEvolutionResponse.Data.Values))
-}
-
-func getBiwengerMarketResponse(r *http.Request) *BiwengerMarketResponse {
-	var biwengerMarketResponse = new(BiwengerMarketResponse)
-	doRequestAndGetStruct("GET", marketUrl, getDefaultHeaders(r), "", &biwengerMarketResponse)
-	return biwengerMarketResponse
-}
-
-func getBiwengerMarketEvolutionResponse(r *http.Request) *BiwengerMarketStatsResponse {
-	var biwengerMarketStatsResponse = new(BiwengerMarketStatsResponse)
-	doRequestAndGetStruct("GET", marketStatsUrl, getDefaultHeaders(r), "", &biwengerMarketStatsResponse)
-	return biwengerMarketStatsResponse
-}
-
-
-func IsMyPlayer(userId int) bool {
-	p := properties.MustLoadFile("application.properties", properties.UTF8)
-	return p.GetInt("userId", 0) == userId
-
-}
+const marketURL string = "/market"
+const marketStatsURL string = "/competitions/la-liga/market?interval=day&includeValues=true"
 
 type PlayerInMarket struct {
 	IdPlayer int `json:"idPlayer"`
-	Price 	 int `json:"price"`
-	IdUser	 int `json:"idUser"`
+	Price    int `json:"price"`
+	IdUser   int `json:"idUser"`
 }
 
 type ReceivedOffer struct {
-	IdOffer	 int `json:"idOffer"`
+	IdOffer  int `json:"idOffer"`
 	IdPlayer int `json:"idPlayer"`
-	Ammount	 int `json:"ammount"`
-	IdUser	 int `json:"idUser"`
+	Ammount  int `json:"ammount"`
+	IdUser   int `json:"idUser"`
 }
 
 type BiwengerMarketResponse struct {
@@ -128,10 +52,10 @@ type BiwengerMarketResponse struct {
 			Player struct {
 				ID int `json:"id"`
 			} `json:"player"`
-			Price int         `json:"price"`
-			Until int         `json:"until"`
+			Price int `json:"price"`
+			Until int `json:"until"`
 			User  struct {
-				ID int `json:"id"` 
+				ID int `json:"id"`
 			} `json:"user"`
 		} `json:"sales"`
 		Status struct {
@@ -211,4 +135,153 @@ type BiwengerMarketStatsResponse struct {
 			StatusText       string        `json:"statusText,omitempty"`
 		} `json:"downs"`
 	} `json:"data"`
+}
+
+type SendToMarket struct {
+	Type  string `json:"type"`
+	Price string `json:"price"`
+}
+
+type BiwengerStatusResponse struct {
+	Status int    `json:"status"`
+	Data   string `json:"data"`
+}
+
+func (cli Client) SendPlayersToMarket(c *gin.Context) {
+	price := c.Query("price") // change to marketValuePercentatge from the body
+	sendToMarket := SendToMarket{Type: "team", Price: price}
+	marketJSON, err := json.Marshal(sendToMarket)
+
+	req := request{
+		method:   "POST",
+		endpoint: marketURL,
+		body:     marketJSON,
+	}
+
+	body, err := cli.doRequest(req)
+	if err != nil {
+		log.Println("error doing request for sending players to market", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var biwengerStatusResponse BiwengerStatusResponse
+	err = json.Unmarshal(body, &biwengerStatusResponse)
+	if err != nil {
+		log.Println("error unmarshalling response body to biwengerStatusResponse", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, biwengerStatusResponse)
+
+}
+
+func (cli Client) GetPlayersInMarket(c *gin.Context) {
+	var playersInMarket []PlayerInMarket
+	biwengerMarketResponse, err := cli.getMarket(c)
+	if err != nil {
+		log.Println("error getting market in GetPlayersInMarket", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	for _, sale := range biwengerMarketResponse.Data.Sales {
+		if !isMyPlayer(sale.User.ID) {
+			playersInMarket = append(playersInMarket, PlayerInMarket{sale.Player.ID, sale.Price, sale.User.ID})
+		}
+	}
+
+	c.JSON(http.StatusOK, playersInMarket)
+}
+
+func (cli Client) GetReceivedOffers(c *gin.Context) {
+	var receivedOffers []ReceivedOffer
+	biwengerMarketResponse, err := cli.getMarket(c)
+	if err != nil {
+		log.Println("error getting market in GetReceivedOffers", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	for _, offer := range biwengerMarketResponse.Data.Offers {
+		receivedOffers = append(receivedOffers, ReceivedOffer{offer.ID, offer.RequestedPlayers[0], offer.Amount, offer.From.ID})
+	}
+
+	c.JSON(http.StatusOK, receivedOffers)
+}
+
+func (cli Client) GetMyMoney(c *gin.Context) {
+	biwengerMarketResponse, err := cli.getMarket(c)
+	if err != nil {
+		log.Println("error getting market in GetReceivedOffers", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, biwengerMarketResponse.Data.Status.Balance)
+}
+
+func (cli Client) GetMaxBid(c *gin.Context) {
+	biwengerMarketResponse, err := cli.getMarket(c)
+	if err != nil {
+		log.Println("error getting market in GetReceivedOffers", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, biwengerMarketResponse.Data.Status.MaximumBid)
+}
+
+func (cli Client) GetMarketEvolution(c *gin.Context) {
+	req := request{
+		method:   "GET",
+		endpoint: marketStatsURL,
+	}
+
+	body, err := cli.doRequest(req)
+	if err != nil {
+		log.Println("error doing request for getting market", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var biwengerMarketStatsResponse BiwengerMarketStatsResponse
+	err = json.Unmarshal(body, &biwengerMarketStatsResponse)
+	if err != nil {
+		log.Println("error unmarshalling response body to biwengerMarketStatsResponse", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, biwengerMarketStatsResponse.Data.Values)
+}
+
+func (cli Client) getMarket(c *gin.Context) (*BiwengerMarketResponse, error) {
+	req := request{
+		method:   "GET",
+		endpoint: marketURL,
+	}
+
+	body, err := cli.doRequest(req)
+	if err != nil {
+		log.Println("error doing request for getting market", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return nil, err
+	}
+
+	var biwengerMarketResponse BiwengerMarketResponse
+	err = json.Unmarshal(body, &biwengerMarketResponse)
+	if err != nil {
+		log.Println("error unmarshalling response body to biwengerMarketResponse", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return nil, err
+	}
+
+	return &biwengerMarketResponse, nil
+}
+
+func isMyPlayer(userId int) bool {
+	p := properties.MustLoadFile("application.properties", properties.UTF8)
+
+	return p.GetInt("userId", 0) == userId
 }

@@ -34,7 +34,7 @@ type Round struct {
 	Short string `json:"short"`
 }
 
-func (cli client) getDaysToNextRound(c *gin.Context) {
+func (cli Client) getDaysToNextRound(c *gin.Context) {
 	req := request{
 		method:   "GET",
 		endpoint: homeURL,
@@ -55,6 +55,7 @@ func (cli client) getDaysToNextRound(c *gin.Context) {
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
+
 	daysToNextRound, err := calculateDays(home.Data.Events)
 	if err != nil {
 		log.Println("error calculating days", err)

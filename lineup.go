@@ -2,86 +2,118 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
-	"github.com/magiconair/properties"
+	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
+const myPlayersURL = "/user?fields=*,lineup(type,playersID),players(*,fitness,team,owner),market(*,-userID),offers,-trophies"
+const setLineUpURL = "/user?fields=*"
 
-const getMyPlayersUrl = "https://biwenger.as.com/api/v2/user?fields=*,lineup(type,playersID),players(*,fitness,team,owner),market(*,-userID),offers,-trophies"
-const setMyLineUpUrl = "https://biwenger.as.com/api/v2/user?fields=*"
-
-func GetMyPlayers(w http.ResponseWriter, r *http.Request) {
-
-	headers := getDefaultHeaders(r)
-	getlineUpBiwengerResponse := new(GetLineUpBiwengerResponse)
-	doRequestAndGetStruct("GET", getMyPlayersUrl, headers, "", &getlineUpBiwengerResponse)
-	playerIds := GetPlayerIdsFromPlayers(getlineUpBiwengerResponse.Data.Players)
-	fmt.Fprintf(w, SendApiResponse(playerIds))
-}
-
-func GetPlayerIdsFromPlayers(players []PlayerBase) []int {
-	var playerIds []int
-	for _, player := range players {
-		playerIds = append(playerIds, player.ID)
+func (cli Client) myPlayers(c *gin.Context) {
+	req := request{
+		method:   "GET",
+		endpoint: myPlayersURL,
+		token:    c.GetHeader("authorization"),
 	}
-	return playerIds
-}
 
-func SetLineUp(w http.ResponseWriter, r *http.Request) {
-
-	lineUp := new(LineUp)
-	getJsonBody(r, &lineUp)
-	jsonLineUp, _ := json.Marshal(StartingEleven{*lineUp})
-	headers := getDefaultHeaders(r)
-	setLineUpBiwengerResponse := new(SetLineUpBiwengerResponse)
-	doRequestAndGetStruct("PUT", setMyLineUpUrl, headers, string(jsonLineUp), &setLineUpBiwengerResponse)
-	fmt.Fprintf(w, SendApiResponse(setLineUpBiwengerResponse))
-}
-
-func getJsonBody(r *http.Request, target interface{}) {
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&target)
+	body, err := cli.doRequest(req)
 	if err != nil {
-		panic(err)
+		log.Println("error doing request for myPlayers", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
-}
 
-func getDefaultHeaders(r *http.Request) map[string]string {
-
-	p := properties.MustLoadFile("application.properties", properties.UTF8)
-
-	auth := r.Header.Get("authorization")
-
-	var m = make(map[string]string)
-	m["Content-Type"] = "application/json"
-	m["authorization"] = auth
-	m["x-lang"] = "en"
-	m["x-league"] = p.GetString("leagueId", "")
-	m["x-user"] = p.GetString("userId", "")
-	m["x-version"] = p.GetString("biwengerVersion", "")
-	return m
-}
-
-func structToJson(entity interface{}) string {
-	json, err := json.Marshal(&entity)
+	var myPlayers MyPlayers
+	err = json.Unmarshal(body, &myPlayers)
 	if err != nil {
-		fmt.Println(err)
-		return ""
+		log.Println("error unmarshalling response body to myPlayers", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
-	return string(json)
+
+	var playerIDs []int
+	for _, player := range myPlayers.Data.Players {
+		playerIDs = append(playerIDs, player.ID)
+	}
+
+	c.JSON(http.StatusOK, playerIDs)
 }
 
+func (cli Client) setLineUp(c *gin.Context) {
+	var lineUp LineUp
+	if err := c.BindJSON(&lineUp); err != nil {
+		log.Println("error binding lineUp", err)
+		c.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
 
-type GetLineUpBiwengerResponse struct {
+	lineupJSON, err := json.Marshal(StartingEleven{L: lineUp})
+	if err != nil {
+		log.Println("error marshalling lineUp", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	req := request{
+		method:   "PUT",
+		body:     lineupJSON,
+		endpoint: setLineUpURL,
+	}
+
+	body, err := cli.doRequest(req)
+	if err != nil {
+		log.Println("error doing request for setLineUp", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	var setLineUp SetLineUp
+	err = json.Unmarshal(body, &setLineUp)
+	if err != nil {
+		log.Println("error unmarshalling response body to setLineUp", err)
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, setLineUp)
+}
+
+type MyPlayers struct {
 	Status int        `json:"status"`
 	Data   LineUpData `json:"data"`
 }
 
-type SetLineUpBiwengerResponse struct {
+type LineUpData struct {
+	ID         int           `json:"id"`
+	Name       string        `json:"name"`
+	Group      string        `json:"group"`
+	Icon       string        `json:"icon"`
+	Points     int           `json:"points"`
+	Balance    int           `json:"balance"`
+	JoinDate   int           `json:"joinDate"`
+	LineupDate int           `json:"lineupDate"`
+	LineUp     LineUp        `json:"lineup"`
+	Market     []interface{} `json:"market"`
+	Players    []PlayerBase  `json:"players"`
+	Offers     []interface{} `json:"offers"`
+}
+
+type SetLineUp struct {
 	Status int            `json:"status"`
 	Data   LineUpBaseData `json:"data"`
+}
+
+type LineUpBaseData struct {
+	ID         int    `json:"id"`
+	Name       string `json:"name"`
+	Group      string `json:"group"`
+	Icon       string `json:"icon"`
+	Points     int    `json:"points"`
+	Balance    int    `json:"balance"`
+	JoinDate   int    `json:"joinDate"`
+	LineupDate int    `json:"lineupDate"`
 }
 
 type StartingEleven struct {
@@ -101,30 +133,4 @@ type Owner struct {
 type PlayerBase struct {
 	ID    int   `json:"id"`
 	Owner Owner `json:"owner"`
-}
-
-type LineUpData struct {
-	ID         int           `json:"id"`
-	Name       string        `json:"name"`
-	Group      string        `json:"group"`
-	Icon       string        `json:"icon"`
-	Points     int           `json:"points"`
-	Balance    int           `json:"balance"`
-	JoinDate   int           `json:"joinDate"`
-	LineupDate int           `json:"lineupDate"`
-	LineUp     LineUp        `json:"lineup"`
-	Market     []interface{} `json:"market"`
-	Players    []PlayerBase  `json:"players"`
-	Offers     []interface{} `json:"offers"`
-}
-
-type LineUpBaseData struct {
-	ID         int    `json:"id"`
-	Name       string `json:"name"`
-	Group      string `json:"group"`
-	Icon       string `json:"icon"`
-	Points     int    `json:"points"`
-	Balance    int    `json:"balance"`
-	JoinDate   int    `json:"joinDate"`
-	LineupDate int    `json:"lineupDate"`
 }
