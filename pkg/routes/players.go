@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/charly3pins/biwenger-api/pkg/biwenger"
-	"github.com/charly3pins/biwenger-api/pkg/repository"
+	"github.com/pablopb3/biwenger-api/pkg/biwenger"
+	"github.com/pablopb3/biwenger-api/pkg/repository"
 
 	"github.com/gin-gonic/gin"
 	"github.com/tidwall/gjson"

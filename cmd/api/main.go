@@ -4,9 +4,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/charly3pins/biwenger-api/pkg/biwenger"
-	"github.com/charly3pins/biwenger-api/pkg/repository"
-	"github.com/charly3pins/biwenger-api/pkg/routes"
+	"github.com/pablopb3/biwenger-api/pkg/biwenger"
+	"github.com/pablopb3/biwenger-api/pkg/repository"
+	"github.com/pablopb3/biwenger-api/pkg/routes"
 
 	"github.com/gin-gonic/gin"
 	mgo "gopkg.in/mgo.v2"

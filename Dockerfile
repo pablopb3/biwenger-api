@@ -1,7 +1,7 @@
 FROM golang:1.12-alpine3.10
 
 # Copy files from context
-WORKDIR /go/src/github.com/charly3pins/biwenger-api/
+WORKDIR /go/src/github.com/pablopb3/biwenger-api/
 COPY . .
 
 # Install dep

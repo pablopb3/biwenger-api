@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/charly3pins/biwenger-api/pkg/biwenger"
+	"github.com/pablopb3/biwenger-api/pkg/biwenger"
 
 	"github.com/gin-gonic/gin"
 )

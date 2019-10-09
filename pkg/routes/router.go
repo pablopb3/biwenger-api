@@ -3,8 +3,8 @@ package routes
 import (
 	"net/http"
 
-	"github.com/charly3pins/biwenger-api/pkg/biwenger"
-	"github.com/charly3pins/biwenger-api/pkg/repository"
+	"github.com/pablopb3/biwenger-api/pkg/biwenger"
+	"github.com/pablopb3/biwenger-api/pkg/repository"
 
 	"github.com/gin-gonic/gin"
 )
