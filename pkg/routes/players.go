@@ -32,6 +32,7 @@ func player(db repository.Store, cli biwenger.Client) gin.HandlerFunc {
 		req := biwenger.Request{
 			Method:   "GET",
 			Endpoint: strings.Replace(getPlayerURL, playerAliasPlaceholder, alias, 1),
+			Token:    c.GetHeader("authorization"),
 		}
 
 		body, err := cli.DoRequest(req)
@@ -58,6 +59,7 @@ func updatePlayers(db repository.Store, cli biwenger.Client) gin.HandlerFunc {
 		req := biwenger.Request{
 			Method:   "GET",
 			Endpoint: getAllPlayersURL,
+			Token:    c.GetHeader("authorization"),
 		}
 
 		body, err := cli.DoRequest(req)

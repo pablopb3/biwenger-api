@@ -27,6 +27,7 @@ func acceptOffer(cli biwenger.Client) gin.HandlerFunc {
 			Method:   "PUT",
 			Endpoint: offersURL + "/" + id,
 			Body:     offerJSON,
+			Token:    c.GetHeader("authorization"),
 		}
 
 		body, err := cli.DoRequest(req)
@@ -68,6 +69,7 @@ func placeOffer(cli biwenger.Client) gin.HandlerFunc {
 			Method:   "POST",
 			Body:     placeOfferBodyJSON,
 			Endpoint: offersURL,
+			Token:    c.GetHeader("authorization"),
 		}
 
 		body, err := cli.DoRequest(req)

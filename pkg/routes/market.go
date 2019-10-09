@@ -34,6 +34,7 @@ func sendPlayers(cli biwenger.Client) gin.HandlerFunc {
 			Method:   "POST",
 			Endpoint: marketURL,
 			Body:     marketJSON,
+			Token:    c.GetHeader("authorization"),
 		}
 
 		body, err := cli.DoRequest(req)
@@ -132,6 +133,7 @@ func marketEvolution(cli biwenger.Client) gin.HandlerFunc {
 		req := biwenger.Request{
 			Method:   "GET",
 			Endpoint: marketStatsURL,
+			Token:    c.GetHeader("authorization"),
 		}
 
 		body, err := cli.DoRequest(req)
@@ -156,6 +158,7 @@ func getMarket(cli biwenger.Client, c *gin.Context) (*biwenger.MarketResponse, e
 	req := biwenger.Request{
 		Method:   "GET",
 		Endpoint: marketURL,
+		Token:    c.GetHeader("authorization"),
 	}
 
 	body, err := cli.DoRequest(req)

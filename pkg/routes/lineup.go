@@ -18,7 +18,7 @@ func myPlayers(cli biwenger.Client) gin.HandlerFunc {
 		req := biwenger.Request{
 			Method:   "GET",
 			Endpoint: myPlayersURL,
-			Token:    c.GetHeader("authorization"),
+			Token:    c.GetHeader("Authorization"),
 		}
 
 		body, err := cli.DoRequest(req)
@@ -65,6 +65,7 @@ func setLineUp(cli biwenger.Client) gin.HandlerFunc {
 			Method:   "PUT",
 			Body:     lineupJSON,
 			Endpoint: setLineUpURL,
+			Token:    c.GetHeader("authorization"),
 		}
 
 		body, err := cli.DoRequest(req)
