@@ -17,6 +17,7 @@ func main() {
 
 	router.HandleFunc("/"+v+"/getDaysToNextRound", GetDaysToNextRound)
 	router.HandleFunc("/"+v+"/getMyPlayers", GetMyPlayers)
+	router.HandleFunc("/"+v+"/getMyLinedUpPlayers", GetMyLinedUpPlayers)
 	router.HandleFunc("/"+v+"/getPlayerById", GetPlayerById)
 	router.HandleFunc("/"+v+"/setLineUp", SetLineUp)
 

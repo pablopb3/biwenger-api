@@ -20,6 +20,15 @@ func GetMyPlayers(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, SendApiResponse(playerIds))
 }
 
+func GetMyLinedUpPlayers(w http.ResponseWriter, r *http.Request) {
+
+	headers := getDefaultHeaders(r)
+	getlineUpBiwengerResponse := new(GetLineUpBiwengerResponse)
+	doRequestAndGetStruct("GET", getMyPlayersUrl, headers, "", &getlineUpBiwengerResponse)
+	playerIds := getlineUpBiwengerResponse.Data.LineUp.PlayerIds
+	fmt.Fprintf(w, SendApiResponse(playerIds))
+}
+
 func GetPlayerIdsFromPlayers(players []PlayerBase) []int {
 	var playerIds []int
 	for _, player := range players {
